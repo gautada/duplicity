@@ -36,7 +36,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # Symlinks for volumes as in original container.build
-RUN sudo -u $USER mkdir -p /home/$USER/source /home/$USER/local /home/$USER/cache /home/$USER/target \
+RUN -u $USER mkdir -p /home/$USER/source /home/$USER/local /home/$USER/cache /home/$USER/target \
  && /bin/ln -svf /mnt/volumes/source /home/$USER/source \
  && /bin/ln -svf /mnt/volumes/container /home/$USER/cache \
  && /bin/ln -svf /mnt/volumes/backup /home/$USER/target
