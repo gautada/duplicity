@@ -4,8 +4,14 @@
 # runs duplicity to run an intelligent backup that should sync encrypted
 # and signed copy of the backups to the target
  
-if [ -z $DUPLICITY_TARGET_URL ] ; then
- DUPLICITY_TARGET_URL=file://$HOME/target
+# Generate a unique instance ID if not provided
+if [ -z "$INSTANCE_ID" ]; then
+    # Fallback to hostname if no specific ID provided
+    INSTANCE_ID=$(hostname)
+fi
+
+if [ -z "$DUPLICITY_TARGET_URL" ] ; then
+    DUPLICITY_TARGET_URL="file://$HOME/target/$INSTANCE_ID"
 fi
 
 full_clean() {
