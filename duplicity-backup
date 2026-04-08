@@ -1,4 +1,5 @@
 #!/bin/ash
+# shellcheck shell=dash
 
 # This script synchronizes the source to a local directory and then 
 # runs duplicity to run an intelligent backup that should sync encrypted
@@ -6,8 +7,14 @@
  
 # Generate a unique instance ID if not provided
 if [ -z "$INSTANCE_ID" ]; then
-    # Fallback to hostname if no specific ID provided
-    INSTANCE_ID=$(hostname)
+    # Use pod name if provided, else hostname, else random suffix
+    if [ -n "$K8S_POD_NAME" ]; then
+        INSTANCE_ID="$K8S_POD_NAME"
+    elif [ -n "$INSTANCE_PREFIX" ]; then
+        INSTANCE_ID="${INSTANCE_PREFIX}-$(hostname)"
+    else
+        INSTANCE_ID="$(hostname)"
+    fi
 fi
 
 if [ -z "$DUPLICITY_TARGET_URL" ] ; then
@@ -15,35 +22,37 @@ if [ -z "$DUPLICITY_TARGET_URL" ] ; then
 fi
 
 full_clean() {
- PASSPHRASE=$DUPLICITY_ENCRYPTER_PASSWORD duplicity cleanup --force $$DUPLICITY_TARGET_URL	
- /bin/rm -rf $HOME/cache/* $HOME/local/*
+ # shellcheck disable=SC2086
+ PASSPHRASE="$DUPLICITY_ENCRYPTER_PASSWORD" duplicity cleanup --force "$DUPLICITY_TARGET_URL"
+ /bin/rm -rf "$HOME"/cache/* "$HOME"/local/*
  
 }
 
 sync_local() {
- /usr/bin/rsync --exclude 'duplicity' --recursive --verbose $HOME/source/ $HOME/local
+ /usr/bin/rsync --exclude 'duplicity' --recursive --verbose "$HOME"/source/ "$HOME"/local
 }
 
 weekly_rotate() {
- PASSPHRASE=$DUPLICITY_ENCRYPTER_PASSWORD /usr/bin/duplicity remove-older-than 3m --force $DUPLICITY_TARGET_URL
- PASSPHRASE=$DUPLICITY_ENCRYPTER_PASSWORD SIGN_PASSPHRASE=$DUPLICITY_SIGNER_PASSWORD /usr/bin/duplicity full --archive-dir $HOME/cache --encrypt-key $DUPLICITY_ENCRYPTER_FINGERPRINT --sign-key $DUPLICITY_SIGNER_FINGERPRINT --verbosity d $HOME/local $DUPLICITY_TARGET_URL
+ # shellcheck disable=SC2086
+ PASSPHRASE="$DUPLICITY_ENCRYPTER_PASSWORD" /usr/bin/duplicity remove-older-than 3m --force "$DUPLICITY_TARGET_URL"
+ # shellcheck disable=SC2086
+ PASSPHRASE="$DUPLICITY_ENCRYPTER_PASSWORD" SIGN_PASSPHRASE="$DUPLICITY_SIGNER_PASSWORD" /usr/bin/duplicity full --archive-dir "$HOME"/cache --encrypt-key "$DUPLICITY_ENCRYPTER_FINGERPRINT" --sign-key "$DUPLICITY_SIGNER_FINGERPRINT" --verbosity d "$HOME"/local "$DUPLICITY_TARGET_URL"
 }
 
 SUNDAY="0"
 DAY_OF_WEEK="$(/bin/date +%u)"
 
 sync_local
-if [ $DAY_OF_WEEK == $SUNDAY ] ; then 
+if [ "$DAY_OF_WEEK" = "$SUNDAY" ] ; then 
  weekly_rotate
 else
  sync_local 
- PASSPHRASE=$DUPLICITY_ENCRYPTER_PASSWORD SIGN_PASSPHRASE=$DUPLICITY_SIGNER_PASSWORD /usr/bin/duplicity --archive-dir $HOME/cache --encrypt-key $DUPLICITY_ENCRYPTER_FINGERPRINT --sign-key $DUPLICITY_SIGNER_FINGERPRINT --verbosity d $HOME/local $DUPLICITY_TARGET_URL
+ # shellcheck disable=SC2086
+ PASSPHRASE="$DUPLICITY_ENCRYPTER_PASSWORD" SIGN_PASSPHRASE="$DUPLICITY_SIGNER_PASSWORD" /usr/bin/duplicity --archive-dir "$HOME"/cache --encrypt-key "$DUPLICITY_ENCRYPTER_FINGERPRINT" --sign-key "$DUPLICITY_SIGNER_FINGERPRINT" --verbosity d "$HOME"/local "$DUPLICITY_TARGET_URL"
  RESULT=$?
- if [ $RESULT -ne 0 ] ; then
+ if [ "$RESULT" -ne 0 ] ; then
   full_clean
   sync_local
   weekly_rotate 
  fi
 fi
-
-
