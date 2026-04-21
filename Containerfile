@@ -1,67 +1,98 @@
-ARG ALPINE_VERSION=latest
+# syntax=docker/dockerfile:1.7
 
-# │ STAGE: CONTAINER
-# ╰――――――――――――――――――――――――――――――――――――――――――――――――――――――
-FROM gautada/alpine:$ALPINE_VERSION as CONTAINER
+ARG DEBIAN_TAG=latest
+FROM gautada/debian:$DEBIAN_TAG AS container
 
 # ╭――――――――――――――――――――╮
 # │ METADATA           │
 # ╰――――――――――――――――――――╯
-LABEL source="https://github.com/gautada/tandoor-container.git"
-LABEL maintainer="Adam Gautier <adam@gautier.org>"
-LABEL description="A container for offsite backup client service"
+LABEL org.opencontainers.image.title="duplicity"
+LABEL org.opencontainers.image.description="A container for offsite backup client service based on Duplicity."
+LABEL org.opencontainers.image.source="https://github.com/gautada/duplicity"
+LABEL org.opencontainers.image.license="GPL-2.0-or-later"
 
-# ╭―
-# │ USER
-# ╰――――――――――――――――――――
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ╭――――――――――――――――――――╮
+# │ PACKAGES           │
+# ╰――――――――――――――――――――╯
+# hadolint ignore=DL3008
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    duplicity \
+    python3-boto3 \
+    python3-pip \
+    rsync \
+    gnupg \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# ╭──────────────────────────────────────────────────────────╮
+# │ User                                                     │
+# ╰──────────────────────────────────────────────────────────╯
 ARG USER=duplicity
-RUN /usr/sbin/usermod -l $USER alpine
-RUN /usr/sbin/usermod -d /home/$USER -m $USER
-RUN /usr/sbin/groupmod -n $USER alpine
-RUN /bin/echo "$USER:$USER" | /usr/sbin/chpasswd
-
+RUN /usr/sbin/usermod -l $USER debian \
+ && /usr/sbin/usermod -d /home/$USER -m $USER \
+ && /usr/sbin/groupmod -n $USER debian \
+ && /bin/passwd -d $USER \
+ && rm -rf /home/debian
 
 # ╭―
 # │ PRIVILEGES
 # ╰――――――――――――――――――――
-COPY privileges /etc/container/privileges
+# Note: The original privileges file is for Alpine's privileged group.
+# debian base uses a different mechanism. We'll update the privileges file
+# to match the debian base expectations (sudoers.d).
+COPY privileges /etc/sudoers.d/duplicity
+RUN chmod 0440 /etc/sudoers.d/duplicity
 
 # ╭―
-# │ BACKUP
+# │ SCRIPTS
 # ╰――――――――――――――――――――
-# No backup needed and even disable the automated hourly backup
-# COPY backup /etc/container/backup
-RUN rm -f /etc/periodic/hourly/container-backup
-
-# ╭―
-# │ ENTRYPOINT
-# ╰――――――――――――――――――――
-COPY entrypoint /etc/container/entrypoint
-
-# ╭――――――――――――――――――――╮
-# │ APPLICATION        │
-# ╰――――――――――――――――――――╯
-ARG DUPLICITY_VERSION=2.1.4
-ARG DUPLICITY_PACKAGE="$DUPLICITY_VERSION"-r0
-
-RUN /sbin/apk add --no-cache rsync \
- && /sbin/apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/latest-stable/community/ duplicity=$DUPLICITY_PACKAGE
-
-# COPY duplicity-backup /usr/bin/duplicity-backup
-# COPY duplicity-syncjob /usr/bin/duplicity-syncjob
-RUN ln -fsv /usr/bin/duplicity-syncjob /etc/periodic/daily
-
-RUN /sbin/apk add --no-cache rsync python3 py3-pip py3-boto3 \
- && /sbin/apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/latest-stable/community/ duplicity=$DUPLICITY_PACKAGE
-
 COPY backup-cleanup /usr/bin/backup-cleanup
 COPY backup-remotes3 /usr/bin/backup-remotes3
+COPY duplicity-backup /usr/bin/duplicity-backup
+COPY duplicity-syncjob /usr/bin/duplicity-syncjob
+RUN chmod +x /usr/bin/backup-cleanup \
+             /usr/bin/backup-remotes3 \
+             /usr/bin/duplicity-backup \
+             /usr/bin/duplicity-syncjob
+
+# ╭――――――――――――――――――――╮
+# │ VERSION            │
+# ╰――――――――――――――――――――╯
+# Override the default container-version to report duplicity version
+COPY <<EOF /usr/bin/container-version
+#!/bin/sh
+/usr/bin/duplicity --version | awk '{print \$2}'
+EOF
+RUN chmod +x /usr/bin/container-version
+
+# ╭――――――――――――――――――――╮
+# │ ENTRYPOINT         │
+# ╰――――――――────────────────
+# debian base uses s6-svscan /etc/services.d
+# We'll put a service in place for duplicity if it's meant to be a long-running daemon
+# but the original entrypoint was a blocking tail -f /dev/null after GPG import.
+# We will adapt the original entrypoint to an s6 service or a wrapper.
+
+COPY entrypoint /usr/bin/duplicity-entrypoint
+RUN chmod +x /usr/bin/duplicity-entrypoint
+
+# Create an s6 service for duplicity entrypoint
+RUN mkdir -p /etc/services.d/duplicity
+COPY <<EOF /etc/services.d/duplicity/run
+#!/bin/sh
+exec /usr/bin/duplicity-entrypoint
+EOF
+RUN chmod +x /etc/services.d/duplicity/run
 
 # ╭――――――――――――――――――――╮
 # │ CONTAINER          │
 # ╰――――――――――――――――――――╯
 COPY aws_test.py /home/$USER/aws_test.py
 RUN /bin/chown -R $USER:$USER /home/$USER
+
 USER $USER
 VOLUME /mnt/volumes/backup
 VOLUME /mnt/volumes/configmaps

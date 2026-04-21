@@ -1,12 +1,7 @@
 # Use this as a place holder I do not thing that there is any need for a 
 # special privilege in this container.
 
-%privileged ALL = (ALL) NOPASSWD: /usr/sbin/crond
-%privileged ALL = (ALL) NOPASSWD: /usr/bin/container-backup
-%privileged ALL = (ALL) NOPASSWD: /etc/periodic/hourly/container-backup
-
-# Enable only for debugging
-# %privileged ALL = (ALL) NOPASSWD: /usr/bin/apt-get
-
-# %wheel         ALL = (ALL) NOPASSWD: /usr/sbin/backup-synchronize-s3
-%privileged ALL = (ALL) NOPASSWD: /bin/mount
+duplicity ALL = (ALL) NOPASSWD: /usr/sbin/crond
+duplicity ALL = (ALL) NOPASSWD: /usr/bin/container-backup
+duplicity ALL = (ALL) NOPASSWD: /etc/periodic/hourly/container-backup
+duplicity ALL = (ALL) NOPASSWD: /bin/mount
