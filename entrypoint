@@ -1,11 +1,6 @@
-#!/bin/ash
+#!/bin/sh
 #
-# entrypoint: Located at `/etc/container/entrypoint` this script is the custom
-#             entry for a container as called by `/usr/bin/container-entrypoint` set
-#             in the upstream [alpine-container](https://github.com/gautada/alpine-container).
-#             The default template is kept in
-#             [gist](https://gist.github.com/gautada/f185700af585a50b3884ad10c2b02f98)
-
+# entrypoint: Modified for debian base compatibility.
 
 container_version() {
  /usr/bin/duplicity --version | awk -F ' ' '{print $2}'
@@ -13,27 +8,27 @@ container_version() {
 
 gpg_key_importer() {
  FINGERPRINT=$1
- if [ -z $FINGERPRINT ] ; then
+ if [ -z "$FINGERPRINT" ] ; then
   /bin/echo "Fingerprint[$FINGERPRINT] not found."
   return 1
  fi
  
- FILE="/mnt/volumes/configmaps/$(/bin/echo $FINGERPRINT)"
- KEY_FILE="$(/bin/echo $FILE).key"
- PKEY_FILE="$(/bin/echo $FILE).pkey"
+ FILE="/mnt/volumes/configmaps/${FINGERPRINT}"
+ KEY_FILE="${FILE}.key"
+ PKEY_FILE="${FILE}.pkey"
 
- if [ ! -f $KEY_FILE ] ; then
+ if [ ! -f "$KEY_FILE" ] ; then
   /bin/echo "Public key file[$KEY_FILE] not found"
   return 2
  fi
  
- if [ ! -f $PKEY_FILE ] ; then
+ if [ ! -f "$PKEY_FILE" ] ; then
   /bin/echo "Private key file[$PKEY_FILE] not found"
   return 3
  fi
  
- KEY_FP="$(/usr/bin/gpg --show-keys $KEY_FILE | sed -n '2p' | xargs)"
- PKEY_FP="$(/usr/bin/gpg --show-keys $PKEY_FILE | sed -n '2p' | xargs)"
+ KEY_FP="$(/usr/bin/gpg --show-keys "$KEY_FILE" | sed -n '2p' | xargs)"
+ PKEY_FP="$(/usr/bin/gpg --show-keys "$PKEY_FILE" | sed -n '2p' | xargs)"
  
  if [ "$FINGERPRINT" != "$KEY_FP" ] ; then
   /bin/echo "Configured fingerprint[$FINGERPRINT] and provided file[$KEY_FILE] fingerprint[$KEY_FP] do not match"
@@ -45,17 +40,16 @@ gpg_key_importer() {
    return 5
   fi
   
-  /usr/bin/gpg --batch --trusted-key $DUPLICITY_ENCRYPTER_FINGERPRINT --import  $KEY_FILE $PKEY_FILE 
+  /usr/bin/gpg --batch --trusted-key "$DUPLICITY_ENCRYPTER_FINGERPRINT" --import "$KEY_FILE" "$PKEY_FILE" 
 }
 
-
-container_entrypoint() {
- gpg_key_importer $DUPLICITY_ENCRYPTER_FINGERPRINT
- gpg_key_importer $DUPLICITY_SIGNER_FINGERPRINT 
+# Main execution logic
+gpg_key_importer "$DUPLICITY_ENCRYPTER_FINGERPRINT"
+gpg_key_importer "$DUPLICITY_SIGNER_FINGERPRINT" 
    
- /usr/bin/gpg --list-keys
- /usr/bin/gpg --list-secret-keys
+/usr/bin/gpg --list-keys
+/usr/bin/gpg --list-secret-keys
   
- /bin/echo "General blocking function."
- /usr/bin/tail -f /dev/null
-}
+/bin/echo "General blocking function."
+/usr/bin/tail -f /dev/null
+
