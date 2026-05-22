@@ -1,17 +1,32 @@
-# Ignore Xcode files - Project organization should be backed up with
-# normal time machine/filesystem backup.
+# This template file is stored at
+# [GitHub Gist](https://gist.github.com/gautada/3a0a4a76d3c7e4539e71fc02c7f599ad)
+
+# XCode - Project files 
 *.xcodeproj/
 
-# Ignore Mac OS X folder information file - This should not be needed in SCM
+# Desktop Services Store - Custom view preferences
 .DS_Store
 
-# Ignore and container runtime folders
+# **Volume Folders** are used in development to set runtime data, usuaully 
+# this is private data and should almost **NEVER** be loaded into version
+# control
 **-volume/
 
-# Ignore any manifest folders
+# **Manifest Folder** is the k8s yaml files that deploy the container, usually
+# this folder is sourced from a private repository and should not be public.
 manifest/
 
-# .dockerignore can simply be a symlink
+# `.dockerignore` file allows you to specify a list of files or directories 
+# that Docker is to ignore during the build process. To create jusr
+# symlink to this files `ln -s .gitignore .dockerignore`
 .dockerignore
 
 .env
+.flake8
+.hadolint.yaml
+.htmlhintrc
+.jscpd.json
+.markdownlint.yaml
+.pre-commit-config.yaml
+.sqlfluff
+.yamllint.yaml
