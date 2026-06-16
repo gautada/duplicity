@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1.7
+# hadolint ignore=DL3007
+FROM docker.io/gautada/debian:latest AS container
 
-ARG DEBIAN_TAG=latest
-FROM gautada/debian:$DEBIAN_TAG AS container
+# ARG DEBIAN_TAG=latest
+# FROM docker.io/library/gautada/debian:$DEBIAN_TAG AS container
 
 # ╭――――――――――――――――――――╮
 # │ METADATA           │
@@ -18,7 +20,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # ╰――――――――――――――――――――╯
 # hadolint ignore=DL3008
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
+ && apt-get install --yes --no-install-recommends \
     duplicity \
     python3-boto3 \
     python3-pip \
@@ -37,66 +39,69 @@ RUN /usr/sbin/usermod -l $USER debian \
  && /bin/passwd -d $USER \
  && rm -rf /home/debian
 
-# ╭―
-# │ PRIVILEGES
-# ╰――――――――――――――――――――
-# Note: The original privileges file is for Alpine's privileged group.
-# debian base uses a different mechanism. We'll update the privileges file
-# to match the debian base expectations (sudoers.d).
-COPY privileges /etc/sudoers.d/duplicity
-RUN chmod 0440 /etc/sudoers.d/duplicity
 
-# ╭―
-# │ SCRIPTS
-# ╰――――――――――――――――――――
-COPY backup-cleanup /usr/bin/backup-cleanup
-COPY backup-remotes3 /usr/bin/backup-remotes3
-COPY duplicity-backup /usr/bin/duplicity-backup
-COPY duplicity-syncjob /usr/bin/duplicity-syncjob
-RUN chmod +x /usr/bin/backup-cleanup \
-             /usr/bin/backup-remotes3 \
-             /usr/bin/duplicity-backup \
-             /usr/bin/duplicity-syncjob
+ENTRYPOINT ["sleep", "indefinitly"]
 
-# ╭――――――――――――――――――――╮
-# │ VERSION            │
-# ╰――――――――――――――――――――╯
-# Override the default container-version to report duplicity version
-COPY <<EOF /usr/bin/container-version
-#!/bin/sh
-/usr/bin/duplicity --version | awk '{print \$2}'
-EOF
-RUN chmod +x /usr/bin/container-version
-
-# ╭――――――――――――――――――――╮
-# │ ENTRYPOINT         │
-# ╰――――――――────────────────
-# debian base uses s6-svscan /etc/services.d
-# We'll put a service in place for duplicity if it's meant to be a long-running daemon
-# but the original entrypoint was a blocking tail -f /dev/null after GPG import.
-# We will adapt the original entrypoint to an s6 service or a wrapper.
-
-COPY entrypoint /usr/bin/duplicity-entrypoint
-RUN chmod +x /usr/bin/duplicity-entrypoint
-
-# Create an s6 service for duplicity entrypoint
-RUN mkdir -p /etc/services.d/duplicity
-COPY <<EOF /etc/services.d/duplicity/run
-#!/bin/sh
-exec /usr/bin/duplicity-entrypoint
-EOF
-RUN chmod +x /etc/services.d/duplicity/run
-
-# ╭――――――――――――――――――――╮
-# │ CONTAINER          │
-# ╰――――――――――――――――――――╯
-COPY aws_test.py /home/$USER/aws_test.py
-RUN /bin/chown -R $USER:$USER /home/$USER
-
-USER $USER
-VOLUME /mnt/volumes/backup
-VOLUME /mnt/volumes/configmaps
-VOLUME /mnt/volumes/container
-VOLUME /mnt/volumes/secrets
-VOLUME /mnt/volumes/source
-WORKDIR /home/$USER
+# # ╭―
+# # │ PRIVILEGES
+# # ╰――――――――――――――――――――
+# # Note: The original privileges file is for Alpine's privileged group.
+# # debian base uses a different mechanism. We'll update the privileges file
+# # to match the debian base expectations (sudoers.d).
+# COPY privileges /etc/sudoers.d/duplicity
+# RUN chmod 0440 /etc/sudoers.d/duplicity
+#
+# # ╭―
+# # │ SCRIPTS
+# # ╰――――――――――――――――――――
+# COPY backup-cleanup /usr/bin/backup-cleanup
+# COPY backup-remotes3 /usr/bin/backup-remotes3
+# COPY duplicity-backup /usr/bin/duplicity-backup
+# COPY duplicity-syncjob /usr/bin/duplicity-syncjob
+# RUN chmod +x /usr/bin/backup-cleanup \
+#              /usr/bin/backup-remotes3 \
+#              /usr/bin/duplicity-backup \
+#              /usr/bin/duplicity-syncjob
+#
+# # ╭――――――――――――――――――――╮
+# # │ VERSION            │
+# # ╰――――――――――――――――――――╯
+# # Override the default container-version to report duplicity version
+# COPY <<EOF /usr/bin/container-version
+# #!/bin/sh
+# /usr/bin/duplicity --version | awk '{print \$2}'
+# EOF
+# RUN chmod +x /usr/bin/container-version
+#
+# # ╭――――――――――――――――――――╮
+# # │ ENTRYPOINT         │
+# # ╰――――――――────────────────
+# # debian base uses s6-svscan /etc/services.d
+# # We'll put a service in place for duplicity if it's meant to be a long-running daemon
+# # but the original entrypoint was a blocking tail -f /dev/null after GPG import.
+# # We will adapt the original entrypoint to an s6 service or a wrapper.
+#
+# COPY entrypoint /usr/bin/duplicity-entrypoint
+# RUN chmod +x /usr/bin/duplicity-entrypoint
+#
+# # Create an s6 service for duplicity entrypoint
+# RUN mkdir -p /etc/services.d/duplicity
+# COPY <<EOF /etc/services.d/duplicity/run
+# #!/bin/sh
+# exec /usr/bin/duplicity-entrypoint
+# EOF
+# RUN chmod +x /etc/services.d/duplicity/run
+#
+# # ╭――――――――――――――――――――╮
+# # │ CONTAINER          │
+# # ╰――――――――――――――――――――╯
+# COPY aws_test.py /home/$USER/aws_test.py
+# RUN /bin/chown -R $USER:$USER /home/$USER
+#
+# USER $USER
+# VOLUME /mnt/volumes/backup
+# VOLUME /mnt/volumes/configmaps
+# VOLUME /mnt/volumes/container
+# VOLUME /mnt/volumes/secrets
+# VOLUME /mnt/volumes/source
+# WORKDIR /home/$USER
