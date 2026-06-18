@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 # shellcheck shell=dash
 
 # This script synchronizes the source to a local directory and then 
