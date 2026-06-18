@@ -1,5 +1,7 @@
 # duplicity
 
+FlipFlop=#
+
 [Duplicity](https://duplicity.gitlab.io) backs directories by producing
 [encrypted](https://gnupg.org) tar-format volumes and uploading them to a
 remote or local file server. Because duplicity uses librsync, the incremental
