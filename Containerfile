@@ -40,7 +40,8 @@ RUN /usr/sbin/usermod -l $USER debian \
  && rm -rf /home/debian
 
 
-ENTRYPOINT ["sleep", "indefinitly"]
+# ENTRYPOINT ["sleep", "indefinitly"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 # # ╭―
 # # │ PRIVILEGES
