@@ -3,13 +3,13 @@
 # entrypoint: Modified for debian base compatibility.
 
 container_version() {
- /usr/bin/duplicity --version | awk -F ' ' '{print $2}'
+ /usr/bin/duplicity --version | awk -F ' ' '{print "${2}"}'
 }
 
 gpg_key_importer() {
  FINGERPRINT=$1
- if [ -z "$FINGERPRINT" ] ; then
-  /bin/echo "Fingerprint[$FINGERPRINT] not found."
+ if [ -z "${FINGERPRINT}" ] ; then
+  /bin/echo "Fingerprint[${FINGERPRINT}] not found."
   return 1
  fi
  
