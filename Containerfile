@@ -63,6 +63,9 @@ RUN /usr/sbin/usermod -l $USER debian \
 #              /usr/bin/duplicity-backup \
 #              /usr/bin/duplicity-syncjob
 #
+
+COPY appversion-check.sh /etc/container/health/appversion-check
+
 # ╭――――――――――――――――――――╮
 # │ VERSION            │
 # ╰――――――――――――――――――――╯
