@@ -40,8 +40,6 @@ RUN /usr/sbin/usermod -l $USER debian \
  && rm -rf /home/debian
 
 
-# ENTRYPOINT ["sleep", "indefinitly"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 # # ╭―
 # # │ PRIVILEGES
@@ -64,15 +62,16 @@ ENTRYPOINT ["tail", "-f", "/dev/null"]
 #              /usr/bin/duplicity-backup \
 #              /usr/bin/duplicity-syncjob
 #
-# # ╭――――――――――――――――――――╮
-# # │ VERSION            │
-# # ╰――――――――――――――――――――╯
-# # Override the default container-version to report duplicity version
-# COPY <<EOF /usr/bin/container-version
-# #!/bin/sh
-# /usr/bin/duplicity --version | awk '{print \$2}'
-# EOF
-# RUN chmod +x /usr/bin/container-version
+# ╭――――――――――――――――――――╮
+# │ VERSION            │
+# ╰――――――――――――――――――――╯
+# Override the default container-version to report application version
+COPY container-version.sh /usr/bin/container-version
+RUN chmod +x /usr/bin/container-version
+
+# ENTRYPOINT ["sleep", "indefinitly"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
+
 #
 # # ╭――――――――――――――――――――╮
 # # │ ENTRYPOINT         │
