@@ -20,6 +20,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # ╰――――――――――――――――――――╯
 # hadolint ignore=DL3008
 RUN apt-get update \
+ && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends \
     duplicity \
     python3-boto3 \
