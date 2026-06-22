@@ -90,5 +90,5 @@ EOF
   # gpg --list-secret-keys --keyid-format=long "$EMAIL"
 }
 
-generate-key "Test"
+generate_key "Test"
 
