@@ -81,8 +81,13 @@ EOF
   echo "$FINGERPRINT"
   echo
 
-  echo "Secret key:"
-  gpg --list-secret-keys --keyid-format=long "$EMAIL"
+  TMP_KEY_FILE="$(mktemp)"
+  gpg --export-secret-key -a \
+    "${REALNAME}" > "${TMP_KEY_FILE}"
+  printf '\n\nKey File:\n%s\n\n\n' "${TMP_KEY_FILE}"
+
+  # echo "Secret key:"
+  # gpg --list-secret-keys --keyid-format=long "$EMAIL"
 }
 
 generate-key "Test"
