@@ -27,6 +27,7 @@ RUN apt-get update \
     python3-pip \
     rsync \
     gnupg \
+    nano \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -73,6 +74,7 @@ COPY appversion-check.sh /etc/container/health/appversion-check
 COPY container-version.sh /usr/bin/container-version
 RUN chmod +x /usr/bin/container-version
 
+COPY generate-key.sh /usr/bin/generate-key
 # ENTRYPOINT ["sleep", "indefinitly"]
 ENTRYPOINT ["tail", "-f", "/dev/null"]
 
