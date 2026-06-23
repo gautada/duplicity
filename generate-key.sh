@@ -81,9 +81,11 @@ EOF
   echo "$FINGERPRINT"
   echo
 
-  TMP_KEY_FILE="$(mktemp)"
-  gpg --export-secret-key -a \
-    "${REALNAME}" > "${TMP_KEY_FILE}"
+  # TMP_KEY_FILE="$(mktemp)"
+  gpg --armor --export "${FINGERPRINT}" > "${FINGERPRINT}.public.asc"
+  gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
+  # gpg --export-secret-key -a \
+  #   "${REALNAME}" > "${TMP_KEY_FILE}"
   printf '\n\nKey File:\n%s\n\n\n' "${TMP_KEY_FILE}"
 
   # echo "Secret key:"
