@@ -60,7 +60,7 @@ EOF
       --pinentry-mode loopback \
       --generate-key "$KEY_PARAMS"
 
-  unset PASSPHRASE
+  # unset PASSPHRASE
   unset PASSPHRASE_CONFIRM
 
   echo
@@ -81,11 +81,29 @@ EOF
   mv "${TMP_KEY_FILE}" "${FINGERPRINT}.public.asc"
 
   TMP_KEY_FILE="$(mktemp)"
-  gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
+  # gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
+  gpg --batch --yes \
+  --pinentry-mode loopback \
+  --passphrase "${PASSPHRASE}" \
+  --armor \
+  --export-secret-keys "${FINGERPRINT}" \
+  > "${TMP_KEY_FILE}"
   mv "${TMP_KEY_FILE}" "${FINGERPRINT}.private.asc"
   
-  gpg --delete-secret-key "${FINGERPRINT}"
-  gpg --delete-key "${FINGERPRINT}"
+  unset PASSPHRASE
+  gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
+  gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
+
+  # TMP_KEY_FILE="$(mktemp)"
+  # gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+  # mv "${TMP_KEY_FILE}" "${FINGERPRINT}.public.asc"
+  #
+  # TMP_KEY_FILE="$(mktemp)"
+  # gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
+  # mv "${TMP_KEY_FILE}" "${FINGERPRINT}.private.asc"
+  #
+  # gpg --delete-secret-key "${FINGERPRINT}"
+  # gpg --delete-key "${FINGERPRINT}"
 
 
   # gpg --export-secret-key -a \
@@ -93,7 +111,7 @@ EOF
   # printf '\n\nKey File:\n%s\n\n\n' "${TMP_KEY_FILE}"
 
   # echo "Secret key:"
-  # gpg --list-secret-keys --keyid-format=long "$EMAIL"
+  gpg --list-secret-keys --keyid-format=long "$EMAIL"
 }
 
 generate_key "gautier.org"
