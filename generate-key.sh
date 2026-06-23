@@ -82,8 +82,8 @@ EOF
 
   if [ "${TYPE}" = "encyptor" ] ; then
     gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
-  else
-    gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
+  # else
+  #   gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
   fi
   unset PASSPHRASE
 }
