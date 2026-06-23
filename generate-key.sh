@@ -2,14 +2,9 @@
 set -euo pipefail
 
 generate_key() {
-  NAME="${1:-General}"
-  REALNAME="Duplicity Backup ${NAME}"
-  EMAIL_NAME="$(
-    printf '%s' "$NAME" |
-    tr '[:upper:]' '[:lower:]' |
-    tr ' ' '-'
-  )"
-  EMAIL="${2:-duplicity-${EMAIL_NAME}@example.com}"
+  DOMAIN="${1:-example.com}"
+  REALNAME="Duplicity Backup Encryptor"
+  EMAIL="${2:-duplicity-encryptor@${DOMAIN}}"
   EXPIRE="10y"
 
   echo "Generating GPG key for:"
@@ -34,7 +29,7 @@ generate_key() {
   stty echo
   printf '\n' >&2
   
-  if [[ "$PASSPHRASE" != "$PASSPHRASE_CONFIRM" ]]; then
+  if [ "$PASSPHRASE" != "$PASSPHRASE_CONFIRM" ]; then
     echo "ERROR: Passphrases do not match." >&2
     exit 1
   fi
@@ -81,16 +76,25 @@ EOF
   echo "$FINGERPRINT"
   echo
 
-  # TMP_KEY_FILE="$(mktemp)"
-  gpg --armor --export "${FINGERPRINT}" > "${FINGERPRINT}.public.asc"
+  TMP_KEY_FILE="$(mktemp)"
+  gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+  mv "${TMP_KEY_FILE}" "${FINGERPRINT}.public.asc"
+
+  TMP_KEY_FILE="$(mktemp)"
   gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
+  mv "${TMP_KEY_FILE}" "${FINGERPRINT}.private.asc"
+  
+  gpg --delete-secret-key "${FINGERPRINT}"
+  gpg --delete-key "${FINGERPRINT}"
+
+
   # gpg --export-secret-key -a \
   #   "${REALNAME}" > "${TMP_KEY_FILE}"
-  printf '\n\nKey File:\n%s\n\n\n' "${TMP_KEY_FILE}"
+  # printf '\n\nKey File:\n%s\n\n\n' "${TMP_KEY_FILE}"
 
   # echo "Secret key:"
   # gpg --list-secret-keys --keyid-format=long "$EMAIL"
 }
 
-generate_key "Test"
+generate_key "gautier.org"
 
