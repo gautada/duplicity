@@ -18,7 +18,7 @@ generate_key() {
   stty echo
   printf '\n' >&2
 
-  printf '%s' "Confirm GPG${EMAIL} passphrase: " >&2
+  printf '%s' "Confirm: " >&2
   stty -echo
   IFS= read -r PASSPHRASE_CONFIRM
   stty echo
@@ -72,29 +72,17 @@ EOF
   echo
 
   TMP_KEY_FILE="$(mktemp)"
+  gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+  gpg --batch --yes \
+      --pinentry-mode loopback \
+      --passphrase "${PASSPHRASE}" \
+      --armor \
+      --export-secret-keys "${FINGERPRINT}" >> "${TMP_KEY_FILE}"
+  mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}-bundle.asc"
+
   if [ "${TYPE}" = "encyptor" ] ; then
-    gpg --batch --yes \
-      --pinentry-mode loopback \
-      --passphrase "${PASSPHRASE}" \
-      --armor \
-      --export-secret-keys "${FINGERPRINT}" > "${TMP_KEY_FILE}"
-    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
     gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
-  elif [ "${TYPE}" = "signer" ] ; then
-    gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
-    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
-    gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
   else
-    gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
-    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
-    TMP_KEY_FILE="$(mktemp)"
-    gpg --batch --yes \
-      --pinentry-mode loopback \
-      --passphrase "${PASSPHRASE}" \
-      --armor \
-      --export-secret-keys "${FINGERPRINT}" > "${TMP_KEY_FILE}"
-    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
-    gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
     gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
   fi
   unset PASSPHRASE
