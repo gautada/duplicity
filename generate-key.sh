@@ -2,28 +2,23 @@
 set -euo pipefail
 
 generate_key() {
-  DOMAIN="${1:-example.com}"
-  REALNAME="Duplicity Backup Encryptor"
-  EMAIL="${2:-duplicity-encryptor@${DOMAIN}}"
+  EMAIL="${1:-generic@email.com}"
+  EMAIL="$(printf '%s' "${EMAIL}" | tr '[:upper:]' '[:lower:]')"
+  TYPE="${EMAIL%@*}"
+  FIRST="$(printf '%s' "${TYPE}" | cut -c 1 | tr '[:lower:]' '[:upper:]')"
+  REST="$(printf '%s' "${TYPE}" | cut -c 2-)"
+  NAME="${FIRST}${REST}"
+  REALNAME="${2:-Duplicity Backup ${NAME}}"
+  EMAIL="${2:-duplicity-${EMAIL}}"
   EXPIRE="10y"
 
-  echo "Generating GPG key for:"
-  echo "  Real Name: $REALNAME"
-  echo "  Email:     $EMAIL"
-  echo "  Expires:   $EXPIRE"
-  echo
-
-  # read -rsp "Enter GPG passphrase: " PASSPHRASE
-  # echo
-  printf '%s' "Enter GPG passphrase: " >&2
+  printf '%s' "Enter GPG(${EMAIL}) passphrase: " >&2
   stty -echo
   IFS= read -r PASSPHRASE
   stty echo
   printf '\n' >&2
 
-  # read -rsp "Confirm GPG passphrase: " PASSPHRASE_CONFIRM
-  # echo
-  printf '%s' "Confirm GPG passphrase: " >&2
+  printf '%s' "Confirm GPG${EMAIL} passphrase: " >&2
   stty -echo
   IFS= read -r PASSPHRASE_CONFIRM
   stty echo
@@ -77,42 +72,33 @@ EOF
   echo
 
   TMP_KEY_FILE="$(mktemp)"
-  gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
-  mv "${TMP_KEY_FILE}" "${FINGERPRINT}.public.asc"
-
-  TMP_KEY_FILE="$(mktemp)"
-  # gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
-  gpg --batch --yes \
-  --pinentry-mode loopback \
-  --passphrase "${PASSPHRASE}" \
-  --armor \
-  --export-secret-keys "${FINGERPRINT}" \
-  > "${TMP_KEY_FILE}"
-  mv "${TMP_KEY_FILE}" "${FINGERPRINT}.private.asc"
-  
+  if [ "${TYPE}" = "encyptor" ] ; then
+    gpg --batch --yes \
+      --pinentry-mode loopback \
+      --passphrase "${PASSPHRASE}" \
+      --armor \
+      --export-secret-keys "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
+    gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
+  elif [ "${TYPE}" = "signer" ] ; then
+    gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
+    gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
+  else
+    gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
+    TMP_KEY_FILE="$(mktemp)"
+    gpg --batch --yes \
+      --pinentry-mode loopback \
+      --passphrase "${PASSPHRASE}" \
+      --armor \
+      --export-secret-keys "${FINGERPRINT}" > "${TMP_KEY_FILE}"
+    mv "${TMP_KEY_FILE}" "${FINGERPRINT}.${TYPE}.asc"
+    gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
+    gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
+  fi
   unset PASSPHRASE
-  gpg --batch --yes --pinentry-mode loopback --armor --delete-secret-key "${FINGERPRINT}"
-  gpg --batch --yes --pinentry-mode loopback --armor --delete-key "${FINGERPRINT}"
-
-  # TMP_KEY_FILE="$(mktemp)"
-  # gpg --armor --export "${FINGERPRINT}" > "${TMP_KEY_FILE}"
-  # mv "${TMP_KEY_FILE}" "${FINGERPRINT}.public.asc"
-  #
-  # TMP_KEY_FILE="$(mktemp)"
-  # gpg --armor --export-secret-key "${FINGERPRINT}" > "${FINGERPRINT}.private.asc"
-  # mv "${TMP_KEY_FILE}" "${FINGERPRINT}.private.asc"
-  #
-  # gpg --delete-secret-key "${FINGERPRINT}"
-  # gpg --delete-key "${FINGERPRINT}"
-
-
-  # gpg --export-secret-key -a \
-  #   "${REALNAME}" > "${TMP_KEY_FILE}"
-  # printf '\n\nKey File:\n%s\n\n\n' "${TMP_KEY_FILE}"
-
-  # echo "Secret key:"
-  gpg --list-secret-keys --keyid-format=long "$EMAIL"
 }
 
-generate_key "gautier.org"
+generate_key "${1:-test@example.com}"
 
