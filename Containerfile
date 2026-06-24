@@ -75,6 +75,9 @@ COPY container-version.sh /usr/bin/container-version
 RUN chmod +x /usr/bin/container-version
 
 COPY generate-key.sh /usr/bin/generate-key
+COPY setup-keys.sh /usr/bin/setup-keys
+COPY backup.sh /usr/bin/duplicity-backup
+
 # ENTRYPOINT ["sleep", "indefinitly"]
 ENTRYPOINT ["tail", "-f", "/dev/null"]
 
