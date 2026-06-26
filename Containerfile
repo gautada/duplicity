@@ -63,6 +63,14 @@ COPY duplicity-status.sh /usr/bin/duplicity-status
 RUN chmod +x /usr/bin/duplicity-backup /usr/bin/duplicity-status \
              /usr/bin/generate-key /usr/bin/setup-keys
 
+
+# ╭――――――――――――――――――――╮
+# │ CRONTAB            │
+# ╰――――――――――――――――――――╯
+# 997 COPY --chown=<user>:<group> <src> <dest>
+COPY --chown=1001:997 duplicity.crontab /var/spool/cron/crontabs/duplicity
+RUN chmod 0600 /var/spool/cron/crontabs/duplicity
+
 # ╭――――――――――――――――――――╮
 # │ VERSION            │
 # ╰――――――――――――――――――――╯
