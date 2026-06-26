@@ -1,5 +1,10 @@
 #!/bin/sh
-duplicity collection-status \
+
+# Load shared environment validation and TARGET_URL construction.
+# shellcheck source=duplicity-common.sh
+. /usr/bin/duplicity-common
+
+/usr/bin/duplicity collection-status \
    --encrypt-key "$ENCRYPTER_FINGERPRINT" \
    --sign-key "$SIGNER_FINGERPRINT" \
-   file:///mnt/volumes/data/25
+   "${TARGET_URL}"

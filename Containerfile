@@ -52,34 +52,24 @@ RUN /usr/sbin/usermod -l $USER debian \
 # COPY privileges /etc/sudoers.d/duplicity
 # RUN chmod 0440 /etc/sudoers.d/duplicity
 #
-# # ╭―
-# # │ SCRIPTS
-# # ╰――――――――――――――――――――
-# COPY backup-cleanup /usr/bin/backup-cleanup
-# COPY backup-remotes3 /usr/bin/backup-remotes3
-# COPY duplicity-backup /usr/bin/duplicity-backup
-# COPY duplicity-syncjob /usr/bin/duplicity-syncjob
-# RUN chmod +x /usr/bin/backup-cleanup \
-#              /usr/bin/backup-remotes3 \
-#              /usr/bin/duplicity-backup \
-#              /usr/bin/duplicity-syncjob
-#
-
-COPY appversion-check.sh /etc/container/health/appversion-check
+# ╭―
+# │ SCRIPTS
+# ╰――――――――――――――――――――
+COPY generate-key.sh /usr/bin/generate-key
+COPY setup-keys.sh /usr/bin/setup-keys
+COPY duplicity-common.sh /usr/bin/duplicity-common
+COPY duplicity-backup.sh /usr/bin/duplicity-backup
+COPY duplicity-status.sh /usr/bin/duplicity-status
+RUN chmod +x /usr/bin/duplicity-backup /usr/bin/duplicity-status \
+             /usr/bin/generate-key /usr/bin/setup-keys
 
 # ╭――――――――――――――――――――╮
 # │ VERSION            │
 # ╰――――――――――――――――――――╯
 # Override the default container-version to report application version
+COPY appversion-check.sh /etc/container/health/appversion-check
 COPY container-version.sh /usr/bin/container-version
-RUN chmod +x /usr/bin/container-version
-
-COPY generate-key.sh /usr/bin/generate-key
-COPY setup-keys.sh /usr/bin/setup-keys
-COPY backup.sh /usr/bin/duplicity-backup
-
-# ENTRYPOINT ["sleep", "indefinitly"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+RUN chmod +x /usr/bin/container-version 
 
 #
 # # ╭――――――――――――――――――――╮
@@ -90,6 +80,7 @@ ENTRYPOINT ["tail", "-f", "/dev/null"]
 # # but the original entrypoint was a blocking tail -f /dev/null after GPG import.
 # # We will adapt the original entrypoint to an s6 service or a wrapper.
 #
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
 # COPY entrypoint /usr/bin/duplicity-entrypoint
 # RUN chmod +x /usr/bin/duplicity-entrypoint
 #
