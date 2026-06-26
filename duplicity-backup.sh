@@ -20,7 +20,7 @@ fi
 
 # Always clean-up the target
 PASSPHRASE="" SIGN_PASSPHRASE="${SIGNER_PASSPHRASE}" \
-  /usr/bin/duplicity remove-older-than 3m --force "$TARGET_URL"
+  /usr/bin/duplicity remove-older-than 3m --force "${TARGET_URL}"
 
 # Determine whether to run a FULL or incremental backup.
 #
