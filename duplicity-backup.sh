@@ -2,6 +2,7 @@
 
 # Load shared environment validation and TARGET_URL construction.
 # shellcheck source=duplicity-common.sh
+# shellcheck disable=SC1091
 . /usr/bin/duplicity-common
 
 # Backup additionally requires the signer passphrase.
