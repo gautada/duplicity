@@ -55,14 +55,14 @@ RUN /usr/sbin/usermod -l $USER debian \
 # ╭―
 # │ SCRIPTS
 # ╰――――――――――――――――――――
-COPY generate-key.sh /usr/bin/generate-key
-COPY setup-keys.sh /usr/bin/setup-keys
+COPY duplicity-generate-key.sh /usr/bin/duplicity-generate-key
+COPY duplicity-setup.sh /usr/bin/duplicity-setup
 COPY duplicity-common.sh /usr/bin/duplicity-common
 COPY duplicity-backup.sh /usr/bin/duplicity-backup
 COPY duplicity-status.sh /usr/bin/duplicity-status
 RUN chmod +x /usr/bin/duplicity-backup /usr/bin/duplicity-status \
-             /usr/bin/generate-key /usr/bin/setup-keys \
- && ln -s duplicity-backup /usr/bin/duplicity-full-backup
+             /usr/bin/duplicity-generate-key /usr/bin/duplicity-setup \
+ && ln -fsv duplicity-backup /usr/bin/duplicity-full-backup
 
 
 # ╭――――――――――――――――――――╮
