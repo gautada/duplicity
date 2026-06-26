@@ -25,6 +25,13 @@ if [ "file://" = "${TARGET_PROTO}" ] ; then
   mkdir -p "${TARGET_DIR}"
 fi
 
+SOURCE_DIR="${SOURCE_DIR:-/mnt/volumes/backup}"
+#to-do: Check to make sure the backup dir exists and log and fail if no
+
+ARCHIVE_DIR="${HOME}/duplicity-cache"
+mkdir -p "${ARCHIVE_DIR}"
+
+
 # Backups are bucketed by week-of-year (00-53) under the target.
 WEEK_OF_YEAR="$(/bin/date +%U)"
 # TARGET_URL is consumed by the scripts that source this file.

@@ -61,8 +61,8 @@ COPY duplicity-common.sh /usr/bin/duplicity-common
 COPY duplicity-backup.sh /usr/bin/duplicity-backup
 COPY duplicity-status.sh /usr/bin/duplicity-status
 RUN chmod +x /usr/bin/duplicity-backup /usr/bin/duplicity-status \
-             /usr/bin/duplicity-generate-key /usr/bin/duplicity-setup \
- && ln -fsv duplicity-backup /usr/bin/duplicity-full-backup
+             /usr/bin/duplicity-generate-key /usr/bin/duplicity-setup
+# && ln -fsv duplicity-backup /usr/bin/duplicity-full-backup
 
 
 # ╭――――――――――――――――――――╮

@@ -5,8 +5,8 @@
 # shellcheck disable=SC1091
 . /usr/bin/duplicity-common
 
-# Backup additionally requires the signer passphrase.
-require SIGNER_PASSPHRASE
+require SIGNER_FINGERPRINT
+require SIGNER_FINGERPRINT
 
 # This script should setup gpc for use with duplicity
 /usr/bin/gpg --batch --yes --import "/mnt/volumes/secrets/${ENCRYPTER_FINGERPRINT}.asc"
