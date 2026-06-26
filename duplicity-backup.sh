@@ -19,7 +19,8 @@ fi
 # mkdir -p "${ARCHIVE_DIR}"
 
 # Always clean-up the target
-/usr/bin/duplicity remove-older-than 3m --force "$TARGET_URL"
+PASSPHRASE="" SIGN_PASSPHRASE="${SIGNER_PASSPHRASE}" \
+  /usr/bin/duplicity remove-older-than 3m --force "$TARGET_URL"
 
 # Determine whether to run a FULL or incremental backup.
 #
@@ -42,9 +43,9 @@ fi
 # esac
 
 PASSPHRASE="" SIGN_PASSPHRASE="${SIGNER_PASSPHRASE}" \
-/usr/bin/duplicity "$@" \
-  --archive-dir "${ARCHIVE_DIR}" \
-  --encrypt-key "${ENCRYPTER_FINGERPRINT}" \
-  --sign-key "${SIGNER_FINGERPRINT}" \
-  --verbosity info \
-  "${SOURCE_DIR}" "${TARGET_URL}"
+  /usr/bin/duplicity "$@" \
+    --archive-dir "${ARCHIVE_DIR}" \
+    --encrypt-key "${ENCRYPTER_FINGERPRINT}" \
+    --sign-key "${SIGNER_FINGERPRINT}" \
+    --verbosity info \
+    "${SOURCE_DIR}" "${TARGET_URL}"
