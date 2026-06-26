@@ -28,8 +28,8 @@ fi
 SOURCE_DIR="${SOURCE_DIR:-/mnt/volumes/backup}"
 #to-do: Check to make sure the backup dir exists and log and fail if no
 
+# shellcheck disable=SC2034
 ARCHIVE_DIR="${HOME}/duplicity-cache"
-mkdir -p "${ARCHIVE_DIR}"
 
 
 # Backups are bucketed by week-of-year (00-53) under the target.

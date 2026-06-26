@@ -8,6 +8,10 @@
 # Backup additionally requires the signer passphrase.
 require SIGNER_PASSPHRASE
 
+if [ ! -d "$ARCHIVE_DIR" ]; then
+  /usr/bin/duplicity-setup
+fi
+
 # SOURCE_DIR="${SOURCE_DIR:-/mnt/volumes/backup}"
 # #to-do: Check to make sure the backup dir exists and log and fail if no
 

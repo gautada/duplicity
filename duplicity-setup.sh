@@ -6,7 +6,7 @@
 . /usr/bin/duplicity-common
 
 require SIGNER_FINGERPRINT
-require SIGNER_FINGERPRINT
+require ENCRYPTER_FINGERPRINT
 
 # This script should setup gpc for use with duplicity
 /usr/bin/gpg --batch --yes --import "/mnt/volumes/secrets/${ENCRYPTER_FINGERPRINT}.asc"
@@ -15,3 +15,5 @@ require SIGNER_FINGERPRINT
 /usr/bin/gpg --list-secret-keys --fingerprint "${SIGNER_FINGERPRINT}"
 echo "$ENCRYPTER_FINGERPRINT:6:" | gpg --import-ownertrust
 echo "$SIGNER_FINGERPRINT:6:" | gpg --import-ownertrust
+
+mkdir -p "${ARCHIVE_DIR}"
