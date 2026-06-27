@@ -48,5 +48,7 @@ PASSPHRASE="" SIGN_PASSPHRASE="${SIGNER_PASSPHRASE}" \
     --archive-dir "${ARCHIVE_DIR}" \
     --encrypt-key "${ENCRYPTER_FINGERPRINT}" \
     --sign-key "${SIGNER_FINGERPRINT}" \
+    --name "cluster.gautier.org" \
+    --allow-source-mismatch \
     --verbosity info \
     "${SOURCE_DIR}" "${TARGET_URL}"
