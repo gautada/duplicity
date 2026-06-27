@@ -44,4 +44,4 @@ mkdir -p "{$TARGET_DIR}"
 WEEK_OF_YEAR="$(/bin/date +%U)"
 # TARGET_URL is consumed by the scripts that source this file.
 # shellcheck disable=SC2034
-TARGET_URL="${TARGET_PROTO}${TARGET_DIR}/${WEEK_OF_YEAR}"
+TARGET_URL="file://${TARGET_DIR}/${WEEK_OF_YEAR}"
