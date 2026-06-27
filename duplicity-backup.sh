@@ -5,12 +5,13 @@
 # shellcheck disable=SC1091
 . /usr/bin/duplicity-common
 
+/usr/bin/duplicity-setup
+
 # Backup additionally requires the signer passphrase.
 require SIGNER_PASSPHRASE
 
-if [ ! -d "$ARCHIVE_DIR" ]; then
-  /usr/bin/duplicity-setup
-fi
+# mkdir -p "${ARCHIVE_DIR}"
+# mkdir -p "${TARGET_DIR}"
 
 # SOURCE_DIR="${SOURCE_DIR:-/mnt/volumes/backup}"
 # #to-do: Check to make sure the backup dir exists and log and fail if no
@@ -36,10 +37,10 @@ DAY_OF_WEEK="$(/bin/date +%u)"
 #   *)
 if [ "$DAY_OF_WEEK" = "$SUNDAY" ] ; then
   set -- full
-else
+exse
   set --
 fi
-#     ;;
+#x    ;;
 # esac
 
 PASSPHRASE="" SIGN_PASSPHRASE="${SIGNER_PASSPHRASE}" \

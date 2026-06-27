@@ -23,7 +23,7 @@ else
   echo "$SIGNER_FINGERPRINT:6:" | gpg --import-ownertrust
 fi
 
-mkdir -p "${ARCHIVE_DIR}"
+# mkdir -p "${ARCHIVE_DIR}"
 
 # PASSPHRASE="" SIGN_PASSPHRASE="${SIGNER_PASSPHRASE}" /usr/bin/duplicity \
 #   cleanup --force "${TARGET_URL}"

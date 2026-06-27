@@ -21,16 +21,24 @@ require() {
 require ENCRYPTER_FINGERPRINT SIGNER_FINGERPRINT TARGET_PROTO TARGET_DIR
 
 # For local file targets, ensure the destination directory exists.
-if [ "file://" = "${TARGET_PROTO}" ] ; then
-  mkdir -p "${TARGET_DIR}"
-fi
+# if [ "file://" = "${TARGET_PROTO}" ] ; then
+#   mkdir -p "${TARGET_DIR}"
+# fi
 
-SOURCE_DIR="${SOURCE_DIR:-/mnt/volumes/backup}"
+SOURCE_DIR="${DUPLICITY_SOURCE:-/mnt/volumes/backup}"
 #to-do: Check to make sure the backup dir exists and log and fail if no
+echo "Source: ${SOURCE_DIR}"
+mkdir -p "{$SOURCE_DIR}"
 
 # shellcheck disable=SC2034
-ARCHIVE_DIR="${HOME}/duplicity-cache"
+# ARCHIVE_DIR="${HOME}/duplicity-cache"
+ARCHIVE_DIR="${DUPLICITY_ARCHIVE:-/mnt/volumes/data/archive}"
+echo "Archive: ${ARCHIVE_DIR}"
+mkdir -p "{$ARCHIVE_DIR}"
 
+TARGET_DIR="${DUPLICITY_TARGET:-/mnt/volumes/data/target}"
+echo "Target: ${TARGET_DIR}"
+mkdir -p "{$TARGET_DIR}"
 
 # Backups are bucketed by week-of-year (00-53) under the target.
 WEEK_OF_YEAR="$(/bin/date +%U)"
